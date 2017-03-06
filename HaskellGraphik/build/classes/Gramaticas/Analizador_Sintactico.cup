@@ -1,0 +1,298 @@
+package Gramaticas;
+
+import Gramaticas.Simbolos;
+import java_cup.runtime.*;
+import java.io.*;
+import java.lang.*;
+import java.util.*;
+import java.util.ArrayList;
+
+
+parser code
+{:
+ /* -------------------------==: DECLARAR EL ARBOL :==--------------------------*/
+    //public Nodo Gramaticas;     
+    public static String cadena;
+
+/* -------------------------==: ERROR SINTACTICO :==--------------------------*/
+public void syntax_error(Symbol s){
+    System.out.println("Error Sintactico -> lexema: " +s.value+" Linea: " +s.right+ " Columna: "+s.left);
+    cadena += "<tr>"
+                + "<td><center><b>" + s.value + "</b></center></td>"
+                + "<td><center><b>" + s.right + "</b></center></td>"
+                + "<td><center><b>" + s.left+ "</b></center></td>"
+                + "</tr>";
+}
+
+/* ------------------==: ERROR SINTACTICO NO RECUPERABLE :==------------------*/
+public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+    System.out.println("Error Sintactico No Recuperable-> Lexema: " +s.value+" Linea: "+s.right+ " Columna: "+s.left);
+     cadena += "<tr>"
+                + "<td><center><b>" + s.value + "</b></center></td>"
+                + "<td><center><b>" + s.right + "</b></center></td>"
+                + "<td><center><b>" + s.left+ "</b></center></td>"
+                + "</tr>";
+}
+
+:}
+
+
+action code
+{:
+//Operaciones_Listas operaciones = new Operaciones_Listas();
+
+:}
+
+/* -----------------------==: Simbolos Terminales :==------------------------*/
+
+
+
+
+
+
+
+terminal String
+multiplicacion, potencia,suma,resta,division,menos_menos,mas_mas,
+or,and,xor,not,var,
+menor,mayor,mayor_igual,menor_igual,no_igual,igual_igual,
+entero_t,decimal_t,caracter_t,cadena_t,bool_t,vacio,publico,privado,protegido,importar,
+incluir_hk,llamar,llamarhk,als,inicio,si,sino,caso,defecto,seleccion,
+mientras,para,continuar,terminar,retorno,graphikar_funcion,columna,
+procesar,donde,dondecada,dondetodo,datos,
+numero,decimal,caracter,id,cadena,verdadero,falso,
+punto,interrogacion,nuevo,
+abre_llave,cierra_llave,igual,
+abre_par,cierra_par,abre_cor,cierra_cor,coma,dos_puntos;
+	
+
+
+    
+
+/* ----------------------==: Simbolos NO Terminales :==-----------------------*/
+non terminal INICIO;
+
+non terminal EXPRESION, ARITMETICA, RELACIONAL, LOGICA, OPERANDO,SIMB_LOGICOS,
+             SIMB_RELACIONALES, SIMB_ARITMETICOS,
+			 LLAMADA_FUNCION, LLAMADA_HASKEL;
+
+non terminal L_VAL_PUNTOS, L_EXP; 	
+
+non terminal L_DIMENSIONES,L_DIM_ASIG;
+
+non terminal L_IDS_VIS, FUNCION, METODO, INICIO, L_PARAMETROS, 
+			TIPO_DATO, VISIBILIDAD;
+
+non terminal ALS, SENTENCIA_UNICA_ALS, SENTENCIAS_ALS, CUERPO_ALS;
+
+
+non terminal ATRIBUTO, ASIGNACION;
+
+		 
+
+non terminal COLUMNA;	
+
+non terminal SENTENCIAS,SENTENCIA_UNICA,CUERPO, SI, CASO, DEFECTO,L_CASOS, SELECCIONA, MIENTRAS,
+             HACER, PARA, CONTINUAR, TERMINAR, RETORNO;
+
+		 
+
+/* ---------------------------==: Precedencia :==-----------------------------*/
+       
+		precedence left or;
+        precedence left xor;
+		precedence left and;
+		precedence left not;
+		precedence left igual_igual, no_igual, menor_igual, mayor_igual,mayor, menor;
+		precedence left suma, resta;
+        precedence left multiplicacion, division;
+        precedence right potencia;
+		precedence left mas_mas, menos_menos;
+		precedence left abre_par;
+        
+		
+		start with INICIO;
+		
+		
+		INICIO::= SENTENCIAS;
+
+ 
+ 
+ SENTENCIA_UNICA_ALS::= ATRIBUTO
+ | METODO
+ | FUNCION
+ | INICIO;
+ //| DATOS;
+ 
+ 
+ 
+/*........................... Atributos .......................*/
+
+L_IDS_VIS::= id
+|id dos_puntos VISIBILIDAD
+|L_IDS_VIS coma id
+|L_IDS_VIS coma id dos_puntos VISIBILIDAD;
+
+ASIGNACION::= id igual nuevo id abre_par cierra_par
+|id igual EXPRESION
+|L_VAL_PUNTOS igual EXPRESION
+|L_VAL_PUNTOS igual nuevo id abre_par cierra_par
+|id L_DIMENSIONES igual L_DIM_ASIG
+|id L_DIMENSIONES igual EXPRESION;
+
+
+ATRIBUTO::= var TIPO_DATO L_IDS_VIS interrogacion
+| var TIPO_DATO id ASIGNACION interrogacion
+| var TIPO_DATO id dos_puntos VISIBILIDAD ASIGNACION interrogacion
+| var TIPO_DATO id dos_puntos VISIBILIDAD L_DIMENSIONES interrogacion
+| var TIPO_DATO id L_DIMENSIONES interrogacion;
+ 
+
+ 
+ 
+ /*....................... Metodos ......................*/
+ 
+ SENTENCIA_UNICA::= SI
+|SELECCIONA
+|MIENTRAS
+|HACER
+|PARA
+|CONTINUAR
+|TERMINAR
+|RETORNO;
+
+SENTENCIAS::= SENTENCIA_UNICA
+		| SENTENCIAS SENTENCIA_UNICA;
+
+CUERPO::= abre_llave SENTENCIAS cierra_llave
+		| abre_llave cierra_llave;
+ 
+  L_PARAMETROS::= TIPO_DATO id
+		| L_PARAMETROS coma TIPO_DATO id;
+ 
+ TIPO_DATO::= decimal_t|entero_t|bool_t|cadena_t|cadena_t|id;
+ 
+ VISIBILIDAD::= protegido|publico|privado;
+ 
+ 
+ METODO::=  vacio id dos_puntos VISIBILIDAD  abre_par L_PARAMETROS cierra_par CUERPO
+ |vacio id abre_par L_PARAMETROS cierra_par CUERPO
+ |vacio id dos_puntos VISIBILIDAD  abre_par  cierra_par CUERPO
+ |vacio id abre_par cierra_par CUERPO;
+ 
+ 
+FUNCION::= TIPO_DATO id dos_puntos VISIBILIDAD abre_par L_PARAMETROS cierra_par  CUERPO
+ |TIPO_DATO id abre_par L_PARAMETROS cierra_par CUERPO
+ |TIPO_DATO id dos_puntos VISIBILIDAD abre_par  cierra_par CUERPO
+ |TIPO_DATO id abre_par cierra_par CUERPO;
+ 
+ /*................. Funciones .........................*/
+ 
+ 
+ 
+/*................ SENTENCIAS DE CONTROL ...................*/
+
+SI::= si abre_par EXPRESION cierra_par CUERPO sino CUERPO
+| si abre_par EXPRESION cierra_par CUERPO ;
+
+CASO::= caso EXPRESION dos_puntos SENTENCIAS;
+
+DEFECTO::= defecto dos_puntos SENTENCIAS;
+
+L_CASOS::= CASO
+|L_CASOS CASO;
+
+SELECCIONA::= seleccion abre_par id cierra_par abre_llave L_CASOS DEFECTO cierra_llave
+| seleccion abre_par id cierra_par abre_llave  cierra_llave
+| seleccion abre_par id cierra_par abre_llave DEFECTO cierra_llave
+| seleccion abre_par id cierra_par abre_llave L_CASOS  cierra_llave;
+
+MIENTRAS ::= mientras abre_par EXPRESION cierra_par CUERPO;
+
+HACER::= CUERPO mientras abre_par EXPRESION cierra_par;
+
+PARA::= para abre_par var entero_t id igual EXPRESION dos_puntos EXPRESION dos_puntos EXPRESION cierra_par CUERPO
+|para abre_par  id igual EXPRESION dos_puntos EXPRESION dos_puntos EXPRESION cierra_par CUERPO;
+
+CONTINUAR ::= continuar interrogacion;
+
+TERMINAR::= terminar interrogacion;
+
+RETORNO ::= retorno EXPRESION interrogacion;
+
+
+
+ 
+ 
+	   /*............ Arreglos ..................*/
+	   
+	   L_DIMENSIONES::= abre_cor EXPRESION cierra_cor
+		| L_DIMENSIONES abre_cor EXPRESION cierra_cor;
+	   
+	   
+	   L_DIM_ASIG::= abre_llave L_EXP cierra_llave
+	   | L_DIM_ASIG abre_llave L_EXP cierra_llave;
+	   
+	   
+	   
+	   
+	   /*..................  Objetos ..........................*/
+	   
+	   L_VAL_PUNTOS::= id punto id
+		|L_VAL_PUNTOS punto id;
+	   
+	   
+		/*...................... EXPRESION ................................*/
+		
+		EXPRESION::= ARITMETICA
+		|RELACIONAL
+		|LOGICA
+		|OPERANDO;
+		//faltan las llamadas a funciones;
+		
+		
+		ARITMETICA::= EXPRESION SIMB_ARITMETICOS EXPRESION;
+		
+		RELACIONAL::= EXPRESION SIMB_RELACIONALES EXPRESION;
+		
+		LOGICA::= EXPRESION SIMB_LOGICOS EXPRESION;
+		
+		SIMB_ARITMETICOS::= suma|resta|multiplicacion|division|potencia;
+		
+		SIMB_LOGICOS::= and|or|xor;
+		
+		SIMB_RELACIONALES::= menor|menor_igual|mayor|mayor_igual|igual_igual|no_igual;
+		
+		L_EXP::= EXPRESION
+		|L_EXP coma EXPRESION;
+		
+		
+		OPERANDO::= id mas_mas
+		|decimal mas_mas
+		|numero mas_mas
+		|caracter mas_mas
+		|id menos_menos
+		|decimal menos_menos
+		|numero menos_menos
+		|caracter menos_menos
+		|resta EXPRESION
+		|not EXPRESION
+		|columna abre_par EXPRESION cierra_par
+		|L_VAL_PUNTOS abre_par L_EXP cierra_par
+		|L_VAL_PUNTOS abre_par cierra_par
+		|L_VAL_PUNTOS 
+		|id L_DIMENSIONES
+		|falso
+		|verdadero
+		|decimal
+		|caracter
+		|numero
+		|cadena
+		|abre_par EXPRESION  cierra_par
+		|id;
+		
+                
+		
+		
+		
+		
+
